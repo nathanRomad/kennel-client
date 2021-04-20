@@ -1,12 +1,14 @@
 import React, { useContext, useState, useEffect } from "react"
 import { AnimalContext } from "./AnimalProvider"
 import { LocationContext } from "../location/LocationProvider"
+import { CustomerContext } from "../customer/CustomerProvider"
 
 
 export const AnimalForm = (props) => {
     // Use the required context providers for data
     const { locations, getLocations } = useContext(LocationContext)
     const { addAnimal, animals, updateAnimal, getAnimals } = useContext(AnimalContext)
+    const { customers, getCustomers } = useContext(CustomerContext)
 
     // Component state
     const [animal, setAnimal] = useState({})
@@ -43,6 +45,7 @@ export const AnimalForm = (props) => {
     useEffect(() => {
         getAnimals()
         getLocations()
+        getCustomers()
     }, [])
 
     // Once provider state is updated, determine the animal (if edit)
@@ -53,6 +56,7 @@ export const AnimalForm = (props) => {
 
     const constructNewAnimal = () => {
         const locationId = parseInt(animal.locationId)
+        const customerId = parseInt(animal.customerId)
 
         if (locationId === 0) {
             window.alert("Please select a location")
@@ -63,9 +67,9 @@ export const AnimalForm = (props) => {
                     id: animal.id,
                     name: animal.name,
                     breed: animal.breed,
-                    locationId: locationId,
-                    treatment: animal.treatment,
-                    customerId: parseInt(localStorage.getItem("kennel_customer"))
+                    status: animal.status,
+                    locationId: parseInt(animal.locationId),
+                    customerId: parseInt(animal.customerId)
                 })
                     .then(() => props.history.push("/animals"))
             } else {
@@ -73,9 +77,9 @@ export const AnimalForm = (props) => {
                 addAnimal({
                     name: animal.name,
                     breed: animal.breed,
+                    status: animal.status,
                     locationId: locationId,
-                    treatment: animal.treatment,
-                    customerId: parseInt(localStorage.getItem("kennel_customer"))
+                    customerId: parseInt(animal.customerId)
                 })
                     .then(() => props.history.push("/animals"))
             }
@@ -107,6 +111,16 @@ export const AnimalForm = (props) => {
             </fieldset>
             <fieldset>
                 <div className="form-group">
+                    <label htmlFor="status">Animal status: </label>
+                    <input type="text" name="status" required className="form-control"
+                        placeholder="Animal status"
+                        defaultValue={animal.status}
+                        onChange={handleControlledInputChange}
+                    />
+                </div>
+            </fieldset>
+            <fieldset>
+                <div className="form-group">
                     <label htmlFor="locationId">Location: </label>
                     <select name="locationId" className="form-control"
                         value={animal.locationId}
@@ -123,13 +137,21 @@ export const AnimalForm = (props) => {
             </fieldset>
             <fieldset>
                 <div className="form-group">
-                    <label htmlFor="treatment">Treatments: </label>
-                    <textarea type="text" name="treatment" className="form-control"
-                        value={animal.treatment}
+                    <label htmlFor="customerId">Customer: </label>
+                    <select name="customerId" className="form-control"
+                        value={animal.customerId}
                         onChange={handleControlledInputChange}>
-                    </textarea>
+
+                        <option value="0">Select a customer</option>
+                        {customers.map(e => (
+                            <option key={e.id} value={e.id}>
+                                {e.name}
+                            </option>
+                        ))}
+                    </select>
                 </div>
             </fieldset>
+            
             <button type="submit"
                 onClick={evt => {
                     evt.preventDefault()
